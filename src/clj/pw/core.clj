@@ -36,21 +36,21 @@
    (resources "/")
    (GET "/" [] (index))
    (POST "/pass/*" [* password]
-          (let [{:keys [out err]} (sh "gpg"
-                        "--batch"
-                        "-d"
-                        "--passphrase-fd" "0"
-                        (format "%s/%s.gpg" path *)
-                        :in password)]
-            (cond
-             (re-find #"No such file or directory" err)
-             (edn-response {:error "Bad service or password"})
+         (let [{:keys [out err]} (sh "gpg"
+                                     "--batch"
+                                     "-d"
+                                     "--passphrase-fd" "0"
+                                     (format "%s/%s.gpg" path *)
+                                     :in password)]
+           (cond
+            (re-find #"No such file or directory" err)
+            (edn-response {:error "Bad service or password"})
 
-             (= "" out)
-             (edn-response {:error "Bad service or password"})
+            (= "" out)
+            (edn-response {:error "Bad service or password"})
 
-             :else
-             (edn-response {:pass (clojure.string/trim-newline out)}))))
+            :else
+            (edn-response {:pass (clojure.string/trim-newline out)}))))
 
    (not-found "404")))
 
