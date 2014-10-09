@@ -16,15 +16,13 @@
                            :source-map true}}
                {:id "prod"
                 :source-paths ["src/cljs"]
-                :compiler {:output-to "resources/public/js/out/app.js"
+                :compiler {:output-to "resources/public/js/out/app.min.js"
                            :optimizations :advanced
                            :pretty-print false
                            :preamble ["react/react.min.js"]
                            :externs ["react/externs/react.js"]
                            :jar true}}]}
   :main pw.main
-  :aot [pw.main]
-  :hooks [leiningen.cljsbuild]
   :dependencies [[org.clojure/clojure "1.6.0"]
                  [org.clojure/core.async "0.1.346.0-17112a-alpha"]
                  [org.clojure/clojurescript "0.0-2356"]
