@@ -18,7 +18,7 @@
     [:title "pw"]]
    [:body
     [:div#app]
-    (if (:production? env)
+    (if (:is-production env)
       [:script {:src "/js/out/app.js"}]
       (html
        [:script {:src "https://fb.me/react-0.11.2.js"}]
@@ -74,7 +74,7 @@
   (map->Webserver {:config config}))
 
 (defn system []
-  (let [{:keys [server storage]} env]
+  (let [{:keys [server-port]} env]
     (component/system-map
-     :server (new-webserver server))))
+     :server (new-webserver {:port (Integer. server-port)}))))
 
