@@ -30,7 +30,6 @@
                  [om "0.7.3"]
                  [sablono "0.2.22"]
                  [hiccup "1.0.5"]
-                 [org.clojure/core.async "0.1.278.0-76b25b-alpha"]
                  [fogus/ring-edn "0.2.0"]
                  [environ "1.0.0"]
                  [ring/ring-core "1.2.2"]
