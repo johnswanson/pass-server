@@ -21,7 +21,7 @@
     (if (:production? env)
       [:script {:src "/js/out/app.js"}]
       (html
-       [:script {:src "/js/react.js"}]
+       [:script {:src "https://fb.me/react-0.11.2.js"}]
        [:script {:src "/js/out/goog/base.js"}]
        [:script {:src "/js/out/app.js"}]
        [:script "goog.require('pw.core');"]))]))
