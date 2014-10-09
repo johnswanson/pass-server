@@ -44,10 +44,10 @@
                         :in password)]
             (cond
              (re-find #"No such file or directory" (:err out))
-             (edn-response {:error "u suck"})
+             (edn-response {:error "Bad service or password"})
 
              (= "" (:out out))
-             (edn-response {:error "u suck"})
+             (edn-response {:error "Bad service or password"})
 
              :else
              (edn-response {:pass (clojure.string/trim-newline (:out out))}))))

@@ -43,21 +43,21 @@
   (reify
     om/IRender
     (render [_]
-      (when fetched
-        (html
-         (let [class (if (:error fetched) "error" "success")]
-           [:input#result {:value (if (:error fetched)
-                                    (:error fetched)
-                                    (:pass fetched))
-                           :ref "result"
-                           :class class}]))))
+      (html
+       (cond
+        (:error fetched) [:input#result.error
+                          {:value (:error fetched) :ref "result"}]
+        (:pass fetched) [:input#ugh.result
+                         {:value (:pass fetched) :ref "result"}]
+        :else nil)))
     om/IDidUpdate
-    (did-update [this one two]
-      (let [timeout-chan (timeout 3000)]
-        (.focus (om/get-node owner "result"))
-        (.select (om/get-node owner "result"))
-        (go (<! timeout-chan)
-            (om/transact! fetched (constantly {:result ""})))))))
+    (did-update [_ _ _]
+      (when (:pass fetched)
+        (let [timeout-chan (timeout 3000)]
+          (.focus (om/get-node owner "result"))
+          (.select (om/get-node owner "result"))
+          (go (let [_ (<! timeout-chan)]
+                (om/transact! fetched (constantly nil)))))))))
 
 (defn fetch-password-if-enter [state evt]
   (when (= (.-keyCode evt) 13)
