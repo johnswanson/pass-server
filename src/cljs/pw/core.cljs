@@ -53,7 +53,7 @@
     om/IDidUpdate
     (did-update [_ _ _]
       (when (:pass fetched)
-        (let [timeout-chan (timeout 3000)]
+        (let [timeout-chan (timeout 60000)]
           (.focus (om/get-node owner "result"))
           (.select (om/get-node owner "result"))
           (go (let [_ (<! timeout-chan)]
