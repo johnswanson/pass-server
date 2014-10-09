@@ -3,12 +3,27 @@
   :url "http://example.com/FIXME"
   :license {:name "Eclipse Public License"
             :url "http://www.eclipse.org/legal/epl-v10.html"}
-  :profiles {:dev {:source-paths ["dev"]
-                   :dependencies [[org.clojure/tools.namespace "0.2.4"]]}}
   :plugins [[lein-environ "1.0.0"]
             [lein-cljsbuild "1.0.3"]]
-  :source-paths ["src/clj"]
-  :dependencies [[org.clojure/clojure "1.5.1"]
+  :source-paths ["src/cljs" "src/clj"]
+  :cljsbuild {:builds
+              [{:id "dev"
+                :source-paths ["src/cljs"]
+                :compiler {:output-to "resources/public/js/out/app.js"
+                           :output-dir "resources/public/js/out"
+                           :optimizations :none
+                           :pretty-print true
+                           :source-map true}}
+               {:id "prod"
+                :source-paths ["src/cljs"]
+                :compiler {:output-to "resources/public/js/out/app.js"
+                           :optimizations :advanced
+                           :pretty-print false
+                           :preamble ["resources/public/js/react.min.js"]
+                           :externs ["resources/public/js/react.externs.js"]}}]}
+  :dependencies [[org.clojure/clojure "1.6.0"]
+                 [org.clojure/core.async "0.1.346.0-17112a-alpha"]
+                 [org.clojure/clojurescript "0.0-2356"]
                  [com.stuartsierra/component "0.2.2"]
                  [om "0.7.3"]
                  [sablono "0.2.22"]

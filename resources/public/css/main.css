@@ -1,0 +1,40 @@
+html {
+		box-sizing: border-box;
+}
+
+*, *:before, *:after {
+		box-sizing: inherit;
+}
+
+body {
+		background-color: #bbb;
+}
+
+input {
+		color:#BFFF00;
+		font-size:32px;
+		margin-left:auto;
+		margin-right:auto;
+		margin-bottom:10px;
+		border-color: #222;
+		border-radius: 5px;
+		border-style: solid;
+		border-width: 2px;
+		padding:20px;
+		margin-left:auto;
+		display: block;
+}
+
+input:focus {
+		outline:none;
+		background-image:none;
+		background-color:#222;
+}
+
+input.error {
+		border-color: red;
+}
+
+input.success {
+		border-color: green;
+}

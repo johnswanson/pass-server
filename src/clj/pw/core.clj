@@ -7,32 +7,65 @@
             [ring.middleware.edn :refer [wrap-edn-params]]
             [ring.middleware.session :as session]
             [clojure.java.shell :refer [sh]]
+            [hiccup.core :refer [html]]
+            [hiccup.page :refer [html5]]
             [environ.core :refer [env]]))
 
-(defn my-routes [{:keys []}]
+(defn index []
+  (html5
+   [:head
+    [:link {:href "/css/main.css" :rel "stylesheet" :type "text/css" :media "all"}]
+    [:title "pw"]]
+   [:body
+    [:div#app]
+    (if (:production? env)
+      [:script {:src "/js/out/app.js"}]
+      (html
+       [:script {:src "/js/react.js"}]
+       [:script {:src "/js/out/goog/base.js"}]
+       [:script {:src "/js/out/app.js"}]
+       [:script "goog.require('pw.core');"]))]))
+
+(defn edn-response [data & [status]]
+  {:status (or status 200)
+   :headers {"Content-Type" "application/edn"}
+   :body (pr-str data)})
+
+(defn my-routes [component path]
   (routes
    (resources "/")
-   (POST "/pass/*" [* test]
-        (let [out (sh "gpg"
-                      "--batch"
-                      "-d"
-                      "--passphrase-fd" "0"
-                      (format "/home/jds/.password-store/%s.gpg" *)
-                      :in test)]
-          (cond
-           (re-find #"No such file or directory" (:err out)) nil
-           (= "" (:out out)) (str "failed decryption: " test)
-           :else (:out out))))
+   (GET "/" [] (index))
+   (POST "/pass/*" [* password]
+          (let [out (sh "gpg"
+                        "--batch"
+                        "-d"
+                        "--passphrase-fd" "0"
+                        (format "%s/%s.gpg" path *)
+                        :in password)]
+            (cond
+             (re-find #"No such file or directory" (:err out))
+             (edn-response {:error "u suck"})
+
+             (= "" (:out out))
+             (edn-response {:error "u suck"})
+
+             :else
+             (edn-response {:pass (clojure.string/trim-newline (:out out))}))))
+
    (not-found "404")))
 
-(defn my-handler [{storage :storage :as component}]
-  (-> (my-routes component)))
+(defn my-handler [component password-store]
+  (-> (my-routes component password-store)
+      (wrap-edn-params)))
 
 (defrecord Webserver [config server]
   component/Lifecycle
   (start [component]
-    (let [server (run-jetty (my-handler component) (assoc config :join? false))]
-      (assoc component :server server)))
+    (if-let [password-store (:password-store env)]
+      (let [server (run-jetty (my-handler component password-store)
+                              (assoc config :join? false))]
+        (assoc component :server server))
+      (throw (Throwable. "env must contain PASSWORD_STORE"))))
   (stop [component]
     (if (:server component) (.stop (:server component)))
     (assoc component :server nil)))
