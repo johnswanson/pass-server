@@ -31,27 +31,25 @@
    :headers {"Content-Type" "application/edn"}
    :body (pr-str data)})
 
+(defn get-password [path service password]
+  (let [{:keys [out err]} (sh "gpg"
+                              "--batch"
+                              "-d"
+                              "--passphrase-fd" "0"
+                              (format "%s/%s.gpg" path service)
+                              :in password)]
+    (if (or (re-find #"No such file or directory" err) (= "" out))
+      nil
+      (clojure.string/split out #"\n"))))
+
 (defn my-routes [component path]
   (routes
    (resources "/")
    (GET "/" [] (index))
    (POST "/pass/*" [* password]
-         (let [{:keys [out err]} (sh "gpg"
-                                     "--batch"
-                                     "-d"
-                                     "--passphrase-fd" "0"
-                                     (format "%s/%s.gpg" path *)
-                                     :in password)]
-           (cond
-            (re-find #"No such file or directory" err)
-            (edn-response {:error "Bad service or password"})
-
-            (= "" out)
-            (edn-response {:error "Bad service or password"})
-
-            :else
-            (edn-response {:pass (clojure.string/trim-newline out)}))))
-
+         (if-let [[pw] (get-password path * password)]
+           (edn-response {:pass pw})
+           (edn-response {:error "Invalid service or password"})))
    (not-found "404")))
 
 (defn my-handler [component password-store]
