@@ -14,6 +14,8 @@ available. Ok, I'll just use Dropbox. Except I'm uncomfortable giving Dropbox ac
 this. Ok, I'll put it on my server somewhere. Except I only allow key-based authentication, so
 now I need to back up my key.
 
+Oh, plus there's the annoyance of not being able to copy and paste passwords from my phone.
+
 Hmm.
 
 In the end, I decided to build a super simple front-end for pass. You send in a service and a
@@ -29,18 +31,41 @@ all your passwords, it's hard not to get excessively paranoid.)
 
 ## Usage
 
+My goal here was to let Nginx take care of HTTPS and rate limiting. Both the dev server and
+production servers will run on high ports (I've chosen 8082 and 8081, but choose as you will).
+Nginx will take care of routing port 443 to the production server.
+
+Configuration works through environmental variables. In development, you set them in
+profiles.clj. In production, you make an uberjar and execute it with those environmental vars.
+
+- `SERVER_PORT` is self-explanatory.
+- `SERVER_HOST` is too. Just remember that 127.0.0.1 means we'll refuse any non-local connections.
+- `PASSWORD_STORE` is the location of your `.password-store` directory. If you're using the defaults
+for `pass`, that'll be `$HOME/.password-store`. But for development it might be a good idea to use
+a fake one, since submitting your password over any port that Nginx isn't providing secure transport
+for is bad news.
+- `IS_PRODUCTION` is, well, this is not ideal. The server needs to know whether to serve the minified,
+compacted, advanced-compiled production javascript or the development versions. So specifying this means
+the server will try to serve production scripts; otherwise it'll serve dev versions. There is definitely
+a better way to go about this, because this smells strongly. But it works for now.
+
 ### Dev
 
 First, create and edit profiles.clj. It should contain the following:
 
 	{:dev {:source-paths ["dev"]
 		   :dependencies [[org.clojure/tools.namespace "0.2.7"]]
-		   :env {:server-port 8081
+		   :env {:server-port 8082
 				 :password-store "/path/to/.password-store"}}}
+
+I'm probably repeating myself by now, but once again, *transport encryption is not provided here*!
+So if you're accessing your real password store over port 8082 and entering your real master password,
+you're revealing your password to anyone listening in. Use a fake password-store if you're accessing
+the Jetty server directly, instead of through a secure intermediary.
 
 Then run:
 
-    lein cljsbuild auto
+    lein cljsbuild once
 	lein repl
 
 In the repl, run `(reset)` to launch the server, or relaunch it after editing code. If there's an error,
@@ -49,10 +74,13 @@ workflow.
 
 ### Production
 
+We want to refuse any non-local connections, so the service can only be accessed by being forwarded
+from an HTTPS connection on 443.
+
 	lein clean
-	lein uberjar
 	lein cljsbuild once prod
-	SERVER_PORT=8081 PASSWORD_STORE=/path/to/.password-store IS_PRODUCTION=true java -jar target/pw-0.1.0-SNAPSHOT-standalone.jar
+	lein uberjar
+	SERVER_PORT=8081 SERVER_HOST=127.0.0.1 PASSWORD_STORE=/path/to/.password-store IS_PRODUCTION=true java -jar target/pw-0.1.0-SNAPSHOT-standalone.jar
 
 
 ## Sample Nginx Conf

@@ -73,8 +73,15 @@
 (defn new-webserver [config]
   (map->Webserver {:config config}))
 
+(defn server-config []
+  (let [{:keys [server-port server-host]} env
+        assoc-port #(if server-port (assoc % :port (Integer. server-port)) %)
+        assoc-host #(if server-host (assoc % :host server-host) %)]
+    (-> {}
+        (assoc-port)
+        (assoc-host))))
+
 (defn system []
-  (let [{:keys [server-port]} env]
-    (component/system-map
-     :server (new-webserver {:port (Integer. server-port)}))))
+  (component/system-map
+   :server (new-webserver (server-config))))
 
