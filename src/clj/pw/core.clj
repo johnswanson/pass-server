@@ -19,11 +19,11 @@
    [:body
     [:div#app]
     (if (:is-production env)
-      [:script {:src "/js/out/app.js"}]
+      [:script {:src "/js/out/app.min.js"}]
       (html
        [:script {:src "https://fb.me/react-0.11.2.js"}]
        [:script {:src "/js/out/goog/base.js"}]
-       [:script {:src "/js/out/app.min.js"}]
+       [:script {:src "/js/out/app.js"}]
        [:script "goog.require('pw.core');"]))]))
 
 (defn edn-response [data & [status]]
