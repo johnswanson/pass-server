@@ -1,6 +1,6 @@
 (defproject pw "0.1.0-SNAPSHOT"
-  :description "FIXME: write description"
-  :url "http://example.com/FIXME"
+  :description "A simple server for the unix password manager, pass"
+  :url "http://github.com/johnswanson/pass-server"
   :license {:name "Eclipse Public License"
             :url "http://www.eclipse.org/legal/epl-v10.html"}
   :plugins [[lein-environ "1.0.0"]
