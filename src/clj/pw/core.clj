@@ -14,7 +14,10 @@
 (defn index []
   (html5
    [:head
-    [:link {:href "/css/main.css" :rel "stylesheet" :type "text/css" :media "all"}]
+    [:link {:href "/css/main.css"
+            :rel "stylesheet"
+            :type "text/css"
+            :media "all"}]
     [:title "pw"]]
    [:body
     [:div#app]
