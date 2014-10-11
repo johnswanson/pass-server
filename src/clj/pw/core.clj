@@ -49,8 +49,8 @@
   (routes
    (resources "/")
    (GET "/" [] (index))
-   (POST "/pass/*" [* password]
-         (if-let [[pw] (get-password path * password)]
+   (POST ["/pass/:service" :service #"[-\w\/]+"] [service password]
+         (if-let [[pw] (get-password path service password)]
            (edn-response {:pass pw})
            (edn-response {:error "Invalid service or password"})))
    (not-found "404")))
