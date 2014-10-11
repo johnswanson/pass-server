@@ -3,6 +3,9 @@
 A tiny clojure/cljs server to act as a web front-end for [pass](http://www.passwordstore.org/).
 And also to play around with clojure and clojurescript. :)
 
+You can check out an example [here](http://example.pw.less.sexy). There's a test service called
+"test", and the gpg password used for [pass](http://www.passwordstore.org/) is "test", too.
+
 ## Motivation
 
 Pass is awesome. The one thing that scares me is the fear of losing my HD and not having backups.
@@ -26,8 +29,8 @@ all your passwords, it's hard not to get excessively paranoid.)
 
 ## Security Considerations
 
-- You'd be an idiot if you ran this over HTTP! :) I am running this behind Nginx over HTTPS.
-- Don't make this a target for brute forcing. Nginx comes in handy again for rate limiting.
+- Don't run this over unencrypted HTTP!
+- Add some form of rate limiting to prevent brute-forcing.
 
 ## Usage
 
