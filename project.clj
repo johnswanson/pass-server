@@ -22,8 +22,8 @@
                            :preamble ["react/react.min.js"]
                            :externs ["react/externs/react.js"]
                            :jar true}}]}
-  :profiles {:uberjar {:aot :all}}
-  :main pw.main
+  :profiles {:uberjar {:aot :all
+                       :main pw.main}}
   :dependencies [[org.clojure/clojure "1.6.0"]
                  [org.clojure/core.async "0.1.346.0-17112a-alpha"]
                  [org.clojure/clojurescript "0.0-2356"]
