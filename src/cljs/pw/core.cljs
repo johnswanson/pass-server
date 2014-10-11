@@ -39,6 +39,8 @@
     (go (let [fetched (<! rc)]
           (om/transact! state (fn [s] (assoc s :fetched fetched)))))))
 
+(defn blank-out [fetched] (om/transact! fetched (constantly nil)))
+
 (defn output [fetched owner]
   (reify
     om/IRender
@@ -48,7 +50,9 @@
         (:error fetched) [:input#result.error
                           {:value (:error fetched) :ref "result"}]
         (:pass fetched) [:input#ugh.result
-                         {:value (:pass fetched) :ref "result"}]
+                         {:value (:pass fetched)
+                          :ref "result"
+                          :onBlur (partial blank-out fetched)}]
         :else nil)))
     om/IDidUpdate
     (did-update [_ _ _]
@@ -57,7 +61,7 @@
           (.focus (om/get-node owner "result"))
           (.select (om/get-node owner "result"))
           (go (let [_ (<! timeout-chan)]
-                (om/transact! fetched (constantly nil)))))))))
+                (blank-out fetched))))))))
 
 (defn fetch-password-if-enter [state evt]
   (when (= (.-keyCode evt) 13)
