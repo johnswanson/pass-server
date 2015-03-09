@@ -9,26 +9,27 @@
   :cljsbuild {:builds
               [{:id "dev"
                 :source-paths ["src/cljs"]
-                :compiler {:output-to "resources/public/js/out/app.js"
+                :compiler {:main pw.core
+                           :output-to "resources/public/js/out/app.js"
                            :output-dir "resources/public/js/out"
-                           :optimizations :none
+                           :optimizations :whitespace
                            :pretty-print true
-                           :source-map true}}
+                           :source-map "resources/public/js/out/app.js.map"}}
                {:id "prod"
                 :source-paths ["src/cljs"]
-                :compiler {:output-to "resources/public/js/out/app.min.js"
+                :compiler {:main pw.core
+                           :output-to "resources/public/js/out/app.min.js"
                            :optimizations :advanced
-                           :pretty-print false
-                           :preamble ["react/react.min.js"]
-                           :externs ["react/externs/react.js"]
-                           :jar true}}]}
-  :profiles {:uberjar {:aot :all
-                       :main pw.main}}
+                           :pretty-print false}}]}
+  :main ^:skip-aot pw.core
+  :profiles {:uberjar {:aot :all}}
   :dependencies [[org.clojure/clojure "1.6.0"]
                  [org.clojure/core.async "0.1.346.0-17112a-alpha"]
-                 [org.clojure/clojurescript "0.0-2356"]
+                 [org.clojure/clojurescript "0.0-2913"]
+                 [org.omcljs/om "0.8.8"]
+                 [org.clojure/tools.cli "0.3.1"]
+                 [org.apache.commons/commons-daemon "1.0.9"]
                  [com.stuartsierra/component "0.2.2"]
-                 [om "0.7.3"]
                  [sablono "0.2.22"]
                  [hiccup "1.0.5"]
                  [fogus/ring-edn "0.2.0"]

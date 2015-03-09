@@ -15,7 +15,7 @@
 
 (defn init
   []
-  (alter-var-root #'system (constantly (core/system))))
+  (alter-var-root #'system (constantly (core/system {}))))
 
 (defn start
   []

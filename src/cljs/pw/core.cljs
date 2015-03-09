@@ -12,6 +12,8 @@
            goog.net.EventType
            [goog.events EventType]))
 
+(.log js/console "test")
+
 (def meths {:get "get" :put "put" :post "post" :delete "delete"})
 
 (defn edn-xhr [{:keys [method url data channel]}]
@@ -84,3 +86,4 @@
 (def init-state (atom {}))
 
 (om/root app init-state {:target (gdom/getElement "app")})
+

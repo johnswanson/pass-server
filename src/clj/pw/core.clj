@@ -1,5 +1,8 @@
 (ns pw.core
+  (:gen-class :implements [org.apache.commons.daemon.Daemon])
+  (:import [org.apache.commons.daemon Daemon DaemonContext])
   (:require [com.stuartsierra.component :as component]
+            [clojure.tools.cli :refer [parse-opts]]
             [ring.adapter.jetty :refer [run-jetty]]
             [compojure.core :refer [GET PUT POST DELETE ANY routes]]
             [compojure.route :refer [not-found resources]]
@@ -24,7 +27,6 @@
     (if (:is-production env)
       [:script {:src "/js/out/app.min.js"}]
       (html
-       [:script {:src "https://fb.me/react-0.11.2.js"}]
        [:script {:src "/js/out/goog/base.js"}]
        [:script {:src "/js/out/app.js"}]
        [:script "goog.require('pw.core');"]))]))
@@ -62,11 +64,11 @@
 (defrecord Webserver [config server]
   component/Lifecycle
   (start [component]
-    (if-let [password-store (:password-store env)]
+    (if-let [password-store (:store config)]
       (let [server (run-jetty (my-handler component password-store)
                               (assoc config :join? false))]
         (assoc component :server server))
-      (throw (Throwable. "env must contain PASSWORD_STORE"))))
+      (throw (Throwable. "Undefined store"))))
   (stop [component]
     (if (:server component) (.stop (:server component)))
     (assoc component :server nil)))
@@ -74,15 +76,72 @@
 (defn new-webserver [config]
   (map->Webserver {:config config}))
 
-(defn server-config []
-  (let [{:keys [server-port server-host]} env
-        assoc-port #(if server-port (assoc % :port (Integer. server-port)) %)
-        assoc-host #(if server-host (assoc % :host server-host) %)]
-    (-> {}
-        (assoc-port)
-        (assoc-host))))
+(def webserver-config
+  {:port (Integer. (or (env :pw-web-port) "8080"))
+   :host (or (env :pw-web-host) "localhost")
+   :store (env :pw-web-store)})
 
-(defn system []
+(defn system [config]
   (component/system-map
-   :server (new-webserver (server-config))))
+   :server (new-webserver (merge config webserver-config))))
+
+(def cli-options
+  [["-p" "--port PORT" "Port number"
+    :default (webserver-config :port)
+    :parse-fn #(Integer/parseInt %)
+    :validate [#(< 0 % 0x10000)]]
+   ["-s" "--store STORE" "Password store"
+    :default (webserver-config :store)]
+   ["-h" "--host HOST" "Hostname"
+    :default (webserver-config :host)]])
+
+(defn exit [status msg]
+  (println msg)
+  (System/exit status))
+
+(defn usage [options-summary]
+  (->> ["API Server"
+        ""
+        "Usage: lein run [options]"
+        ""
+        "Options:"
+        options-summary]
+       (clojure.string/join "\n")))
+
+(defn error-msg [errors]
+  (str "The following errors occurred when parsing your command:\n\n"
+       (clojure.string/join "\n" errors)))
+
+(def state (atom {}))
+
+(defn init [{:keys [options errors summary]}]
+  (cond
+    (:help options) (exit 0 (usage summary))
+    errors (exit 1 (error-msg errors)))
+  (swap! state assoc :options options))
+
+(defn start []
+  (let [sys (system (:options @state))]
+    (swap! state assoc :system sys)
+    (component/start sys)))
+
+(defn stop []
+  (component/stop (:system @state)))
+
+(defn -init [this ^DaemonContext context]
+  (print "init")
+  (init (parse-opts (.getArguments context) cli-options)))
+
+(defn -start [this]
+  (future (start)))
+
+(defn -stop [this]
+  (stop))
+
+(defn -destroy [this] nil)
+
+(defn -main
+  [& args]
+  (init (parse-opts args cli-options))
+  (start))
 
