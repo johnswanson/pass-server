@@ -1,0 +1,11 @@
+#!/bin/bash
+
+PW_WEB_STORE=/home/example/.password-store
+PW_WEB_HOST=localhost
+PW_WEB_PORT=8080
+IS_PRODUCTION=1
+
+export PW_WEB_STORE
+export PW_WEB_HOST
+export PW_WEB_PORT
+export IS_PRODUCTION
